@@ -31,7 +31,7 @@ export default function TerrainPage() {
   }
   return (
     <div className='flex flex-col h-screen overflow-hidden bg-white'>
-      <header className='h-12 flex items-center px-4 gap-3 border-b border-gray-200 shrink-0'>
+      <header className='h-12 flex items-center px-4 gap-3 border-b border-gray-400 shrink-0'>
         <button className='flex items-center gap-2 text-sm px-3 py-1.5 border border-gray-200 rounded-md hover:bg-gray-50'>
           {/* rectangle icon */}
           <svg width='12' height='12' viewBox="0 0 12 12" fill='none'>
@@ -52,7 +52,7 @@ export default function TerrainPage() {
           <MapPanel onBboxChange={setBbox} />
         </main>
 
-        <aside className='w-80 flex flex-col border-1 border-gray-200 overflow-hidden'>
+        <aside className='w-80 flex flex-col border-1 border-gray-400 overflow-hidden'>
           <PreviewCanvas bbox={bbox} params={params} />
           <ConfigPanel
             params={params}
