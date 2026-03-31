@@ -17,7 +17,7 @@ export async function fetchElevationGrid(
 ): Promise<ElevationGrid> {
 
     const params = new URLSearchParams({
-        demtype: 'SRTMGL3',
+        demtype: 'SRTMGL1',
         south: bbox.south.toString(),
         north: bbox.north.toString(),
         west: bbox.west.toString(),
