@@ -1,4 +1,4 @@
-This is a web app to create STL files for 3d printing using data from ['opentopography.org'](https://opentopography.org)
+This is a web app to create STL files for 3d printing using data from [opentopography.org](https://opentopography.org)
 
 
 ---
