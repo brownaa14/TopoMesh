@@ -36,7 +36,6 @@ function buildGeometry(
     const rows = grid.length
     const cols = grid[0].length
 
-    // Find the min and max elevation in this grid
     let elevMin = Infinity
     let elevMax = -Infinity
     for (const row of grid) {
@@ -45,41 +44,117 @@ function buildGeometry(
             if (val > elevMax) elevMax = val
         }
     }
-    // Avoid division by zero for perfectly flat regions
     const elevRange = elevMax - elevMin || 1
 
     const vertices: number[] = []
     const indices: number[] = []
-    const normals: number[] = []
 
+    function addVertex(x: number, y: number, z: number): number {
+        vertices.push(x, y, z)
+        return (vertices.length / 3) - 1
+    }
+
+    function addTriangle(a: number, b: number, c: number) {
+        indices.push(a, b, c)
+    }
+
+    // ── 1. Top surface ──
+    const topIndices: number[][] = []
     for (let row = 0; row < rows; row++) {
+        const rowIndices: number[] = []
         for (let col = 0; col < cols; col++) {
             const x = (col / (cols - 1)) - 0.5
             const z = (row / (rows - 1)) - 0.5
-            // Normalise to 0-1 regardless of whether data is fake or real metres
             const normalised = (grid[row][col] - elevMin) / elevRange
-            const y = normalised * zScale * 0.3 + baseThickness * 0.01
+            const y = baseThickness * 0.01 + normalised * zScale * 0.3
 
-            vertices.push(x, y, z)
-            normals.push(0, 1, 0)
+            rowIndices.push(addVertex(x, y, z))
         }
+        topIndices.push(rowIndices)
     }
 
     for (let row = 0; row < rows - 1; row++) {
         for (let col = 0; col < cols - 1; col++) {
-            const topLeft = row * cols + col
-            const topRight = topLeft + 1
-            const bottomLeft = (row + 1) * cols + col
-            const bottomRight = bottomLeft + 1
+            const tl = topIndices[row][col]
+            const tr = topIndices[row][col + 1]
+            const bl = topIndices[row + 1][col]
+            const br = topIndices[row + 1][col + 1]
 
-            indices.push(topLeft, bottomLeft, topRight)
-            indices.push(topRight, bottomLeft, bottomRight)
+            addTriangle(tl, bl, tr)
+            addTriangle(tr, bl, br)
         }
+    }
+
+    // ── 2. Bottom face ──
+    const bottomIndices: number[][] = []
+    for (let row = 0; row < rows; row++) {
+        const rowIndices: number[] = []
+        for (let col = 0; col < cols; col++) {
+            const x = (col / (cols - 1)) - 0.5
+            const z = (row / (rows - 1)) - 0.5
+            rowIndices.push(addVertex(x, 0, z))
+        }
+        bottomIndices.push(rowIndices)
+    }
+
+    for (let row = 0; row < rows - 1; row++) {
+        for (let col = 0; col < cols - 1; col++) {
+            const tl = bottomIndices[row][col]
+            const tr = bottomIndices[row][col + 1]
+            const bl = bottomIndices[row + 1][col]
+            const br = bottomIndices[row + 1][col + 1]
+
+            addTriangle(tl, tr, bl)
+            addTriangle(tr, br, bl)
+        }
+    }
+
+    // ── 3. Front wall (row 0) ──
+    for (let col = 0; col < cols - 1; col++) {
+        const t0 = topIndices[0][col]
+        const t1 = topIndices[0][col + 1]
+        const b0 = bottomIndices[0][col]
+        const b1 = bottomIndices[0][col + 1]
+
+        addTriangle(t0, t1, b0)
+        addTriangle(t1, b1, b0)
+    }
+
+    // ── 4. Back wall (last row) ──
+    for (let col = 0; col < cols - 1; col++) {
+        const t0 = topIndices[rows - 1][col]
+        const t1 = topIndices[rows - 1][col + 1]
+        const b0 = bottomIndices[rows - 1][col]
+        const b1 = bottomIndices[rows - 1][col + 1]
+
+        addTriangle(t0, b0, t1)
+        addTriangle(t1, b0, b1)
+    }
+
+    // ── 5. Left wall (col 0) ──
+    for (let row = 0; row < rows - 1; row++) {
+        const t0 = topIndices[row][0]
+        const t1 = topIndices[row + 1][0]
+        const b0 = bottomIndices[row][0]
+        const b1 = bottomIndices[row + 1][0]
+
+        addTriangle(t0, b0, t1)
+        addTriangle(t1, b0, b1)
+    }
+
+    // ── 6. Right wall (last col) ──
+    for (let row = 0; row < rows - 1; row++) {
+        const t0 = topIndices[row][cols - 1]
+        const t1 = topIndices[row + 1][cols - 1]
+        const b0 = bottomIndices[row][cols - 1]
+        const b1 = bottomIndices[row + 1][cols - 1]
+
+        addTriangle(t0, t1, b0)
+        addTriangle(t1, b1, b0)
     }
 
     const geometry = new THREE.BufferGeometry()
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3))
-    geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3))
     geometry.setIndex(indices)
     geometry.computeVertexNormals()
 

@@ -23,7 +23,7 @@ export async function fetchElevationGrid(
         west: bbox.west.toString(),
         east: bbox.east.toString(),
         outputFormat: 'GTiff',
-        API_Key: process.env.OPENTOPOGROPHY_API_KEY ?? 'demoapikeyot2022',
+        API_Key: process.env.OPENTOPOGROPHY_API_KEY
     })
 
     const url = `https://portal.opentopography.org/API/globaldem?${params}`
