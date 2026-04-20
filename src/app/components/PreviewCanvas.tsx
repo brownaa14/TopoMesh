@@ -286,7 +286,7 @@ export default function PreviewCanvas({ bbox, params }: PreviewCanvasProps) {
             />
             {!bbox && (
                 <div className="absolute inset-0 flex items-center justify-center bg-stone-100">
-                    <p className="text-xs text-gray-400">Draw a region to preview terrain</p>
+                    <p className="text-xs text-gray-400">Draw a region to preview terrain <br /> Areas may take ~10 seconds to load.</p>
                 </div>
             )}
             {bbox && (
