@@ -10,8 +10,6 @@ type PreviewCanvasProps = {
     params: TerrainParams
 };
 
-const [isLoading, setIsLoading] = useState(false)
-
 function generateFakeGrid(width: number, height: number): number[][] {
     const grid: number[][] = [];
     for (let y = 0; y < height; y++) {
